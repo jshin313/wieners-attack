@@ -1,0 +1,64 @@
+\documentclass[11pt]{article}
+\usepackage[a4, margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[title]{appendix}
+
+\usepackage[nottoc]{tocbibind} %Adds "References" to the table of contents
+
+%Document title, author and date (empty)
+\title{A Few Attacks to Break the RSA Cryptosystem}
+\author{Jacob Shin}
+\date{December 2020}
+
+%Beginning of the document
+\begin{document}
+
+\maketitle
+
+% \tableofcontents
+
+\section{Background on RSA}
+RSA is a widely used cryptosystem that allows secure encryption and decryption of data. Even though RSA was first released in 1977 by MIT researchers (whose names make up the RSA acronym), and also independently discovered in 1973 and kept secret by British Intelligence, RSA still plays a crucial role in securing today's Internet traffic and digital transactions \cite{boneh, rosen}. It is \emph{asymmetric} meaning that there are two separate keys -- one for encrypting and one for decrypting. The key used for encryption is called the \emph{public key} while the decryption key is called the \emph{private key}, since everyone can have access to the public key while only the receiver should have access to the private key.
+
+Let us first define some terminology. The message we want to encrypt is called the \emph{plaintext} and the encrypted message is the \emph{ciphertext}. They are denoted by \emph{m} and \emph{c}, respectively. We use also have two exponents when using RSA -- one used solely for encryption called the public exponent, \emph{e}, and a private exponent, \emph{d}, used only for decryption. The private exponent is kept private/secret as the name suggests, while the public exponent is not. The RSA algorithm also utilizes a modulus, \emph{n}, in both encryption and decryption operations. The following formulas allow us to encrypt and decrypt data.\\
+
+Encryption:
+$$ c \equiv m^e \; (mod \; n)$$
+
+Decrpytion:
+$$ m \equiv c^d \; (mod \; n)$$
+
+Notice that for encryption both \emph{e} and \emph{n} are present in addition to the message. Together these form the \emph{public key} and, which can be denoted as the pair $\langle n, e \rangle$. Similiarly, decryption uses both \emph{d} and \emph{n}, which together form the \emph{private key}. Both the public key and private key are also often encoded with base64 to save space and for easier packaging of the keys (see Appendix \ref{appendix:pem}).\\
+
+The following result can be derived from the above \cite{boneh}:
+$$ m \equiv c^d  \equiv (m^{e})^d\ \equiv m^{ed}\; (mod \; n)$$
+
+In order for the above statement to be true, there are some more definitions for some of the variables defined above. 
+$$ n = p \cdot q $$
+
+The modulus, \emph{n}, is the product of two distinct primes, \emph{p} and \emph{q}. One of the reasons why RSA is secure when done properly is due to how difficult it is to factor large numbers. Thus an attacker would have a difficult time factoring \emph{n} to get \emph{p} and \emph{q}.
+
+Next we have a function called Euler's totient represented by $\phi$.
+$$ \phi(n) = (p - 1)(q - 1)$$
+
+This function is used to get the value for \emph{e}, the public exponent.
+
+\section{Wiener's Attack}
+
+\medskip
+
+%Bibliographic references
+%Sets the bibliography style to UNSRT and imports the 
+%bibliography file "bib.bib".
+\bibliographystyle{unsrt}
+\bibliography{bib}
+
+\begin{appendices}
+\section{Wiener's Attack Example Code}
+\section{Encoding Cryptographic Keys}
+\label{appendix:pem}
+\end{appendices}
+
+\end{document}
+
