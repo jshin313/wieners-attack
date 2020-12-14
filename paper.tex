@@ -3,6 +3,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
 \usepackage[title]{appendix}
+\usepackage{graphicx}
 
 \usepackage{url}
 \usepackage{amsmath} % for "\cfrac" macro
@@ -10,7 +11,7 @@
 \usepackage[nottoc]{tocbibind} %Adds "References" to the table of contents
 
 %Document title, author and date (empty)
-\title{A Few Attacks on RSA}
+\title{Wieners's Attack on RSA}
 \author{Jacob Shin}
 \date{December 2020}
 
@@ -32,7 +33,7 @@ Encryption:
 Decrpytion:
 \begin{equation} m \equiv c^d \; (mod \; n)\end{equation}
 
-Notice that for encryption both \emph{e} and \emph{n} are present in addition to the message. Together these form the \emph{public key} and, which can be denoted as the pair $\langle n, e \rangle$. Similiarly, decryption uses both \emph{d} and \emph{n}, which together form the \emph{private key}. Both the public key and private key are also often encoded with base64 to save space and for easier packaging of the keys (see Appendix \ref{appendix:pem}).\\
+Notice that for encryption both \emph{e} and \emph{n} are present in addition to the message. Together these form the \emph{public key} and, which can be denoted as the pair $\langle n, e \rangle$. Similiarly, decryption uses both \emph{d} and \emph{n}, which together form the \emph{private key}. Both the public key and private key are also often encoded with base64 to save space and for easier packaging of the keys.\\
 
 The following result can be derived from the above \cite{boneh}.
 \begin{equation} m \equiv c^d  \equiv (m^{e})^d\ \equiv m^{ed}\; (mod \; n)\end{equation}
@@ -77,10 +78,10 @@ When we apply Fermat's little theorem to expression 12 we get the following:
 And we can also apply the theorem to expression 13:
 \begin{equation} c^d \equiv m^{1} \cdot (m^{k \cdot (q - 1)})^{(p - 1)} \equiv m \; (mod \; p) \end{equation}
 
-Finally, we can apply the Chinese Remainder Theorem (see Section \ref{CRT}) to verify that decryption does indeed produce the original message \cite{rosen}:
+Finally, we can apply the Chinese Remainder Theorem to verify that decryption does indeed produce the original message \cite{rosen}:
 \begin{equation} c^d \equiv m^{1} \; (mod \; p \cdot q)\equiv m \; (mod \; n) \end{equation}
 
-Even though many attacks on RSA exist, most of the attacks are only effective when there is an improper use or generation of the public key and/or private key. Thus as long as RSA is not used improperly, it will be secure against any classical, non-quantum computer based attacks. In this paper, "breaking" RSA does not mean breaking the whole RSA cryptosystem, but rather just the implementation of RSA and the improper use of public/private keys to recover a secret. The rest of this paper will explore some of these classical, common attacks on RSA.
+Even though many attacks on RSA exist, most of the attacks are only effective when there is an improper use or generation of the public key and/or private key. Thus as long as RSA is not used improperly, it will be secure against any classical, non-quantum computer based attacks. In this paper, "breaking" RSA does not mean breaking the whole RSA cryptosystem, but rather just the implementation of RSA and the improper use of public/private keys to recover a secret. The rest of this paper will explore a classical, common attack on RSA.
 
 \section{Wiener's Attack}
 Wiener's attack utilizes an improperly chosen private exponent, \emph{d}, in order to recover the secrets from just the public key. Wiener proved that if $d < \frac{1}{3} n^{\frac{1}{4}}$, it is guaranteed that an attacker can recover \emph{d} \cite{boneh}. Thus to prevent an attack, a user simply has to choose a value for \emph{d} that is big enough to be secure. The rest of this section will cover how to use Wiener's findings to recover \emph{d}.
@@ -109,9 +110,9 @@ $$\pi=3+\cfrac{1}{7+\cfrac{1}{15+\cfrac{1}{1+\cfrac{1}{292+\cfrac{1}{\ddots}}}}}
 
 After each fraction, the value of $\pi$ comes closer and closer to the actual value of $\pi$.
 
-$$ 3 + \frac{1}{7} = 3.142857143$$
-$$\pi=3+\cfrac{1}{7+\cfrac{1}{15}} = 3.141509434$$
-$$\pi=3+\cfrac{1}{7+\cfrac{1}{15+\cfrac{1}{1}}} = 3.14159292 $$
+$$ \pi \approx 3 + \frac{1}{7} = 3.142857143$$
+$$\pi \approx 3+\cfrac{1}{7+\cfrac{1}{15}} = 3.141509434$$
+$$\pi \approx 3+\cfrac{1}{7+\cfrac{1}{15+\cfrac{1}{1}}} = 3.14159292 $$
 
 and so on. \\
 
@@ -130,9 +131,46 @@ Each fraction at each step is called a \emph{convergent}. We can also use contin
 
 An example of using Wiener's attack to find \emph{d} is provided in Appendix \ref{appendix:example}.
 
-\section{Chinese Remainder Theorem (CRT)} \label{CRT}
+% \section{Chinese Remainder Theorem (CRT)} \label{CRT}
 
-\section{Håstad's attack}
+% \section{Håstad's attack}
+
+\begin{appendices}
+\section{Wiener's Attack Example}
+\label{appendix:example}
+Let $ e = 42667 $ and $ n = 64741$. Thus we will need to find approximations of $\frac{e}{n} = \frac{42667}{64741}$ using continued fractions. We can find the convergents of the continued fraction of $\frac{e}{n}$ using Euclid's algorithm:
+
+$$ 42667 = 0 \cdot 64741 + 42667 $$
+$$ 64741 = 1 \cdot 42667 + 22704 $$
+$$ 42667 = 1 \cdot 22704 + 20593 $$
+$$ 22704 = 1 \cdot 20593 + 1481 $$
+$$ 20593 = 13 \cdot 1481 + 1340 $$
+$$ 1481 = 1 \cdot 1340 + 141 $$
+$$ \cdots $$
+
+Now we can express $\frac{e}{n}$ as a continued fraction:
+$$\frac{e}{n}= 0 + \cfrac{1}{1+\cfrac{1}{1+\cfrac{1}{1+\cfrac{1}{13+\cfrac{1}{1+\cfrac{1}{\ddots}}}}}}$$
+
+Thus the convergents are as follows:
+
+$$ 0 + \frac{1}{1} $$
+$$0+\cfrac{1}{1+\cfrac{1}{1}} = \frac{1}{2}$$
+$$0+\cfrac{1}{1+\cfrac{1}{1+\cfrac{1}{1}}} = \frac{2}{3} $$
+% $$0+\cfrac{1}{1+\cfrac{1}{1+\cfrac{1}{1}}} = $$
+\begin{itemize}
+	\item The first convergent fails because \emph{d} and \emph{e} can't be 1.
+	\item The second convergent fails the first test. In this convergent, $\frac{1}{2} = \frac{k}{d}$, but this is wrong since \emph{d} has to be odd.
+\item The third convergent passes all the checks. \emph{d} is 3 so it is odd, which passes the first test. $\phi(n) = \frac{ d \cdot e - 1}{k} = \frac{3 \cdot 42667 - 1}{2} = 64000$, which a whole number, so this passes the second check. Finally, the solution to the following equation produces whole number values for x: $ x^2 - (n - \phi(n) + 1)x + n = x^2 - (64741 - 64000 + 1)x + 64741 = 0$. The solutions for x are 641 and 101, which are \emph{p} and {q}. We have now found all the secret information since all the checks pass. Thus \emph{d} is $3$ for this particular example.
+\end{itemize}
+
+Note that in this examples, the convergents are precomputed ahead of time for clarity; however, it is more efficient in an actual algorithm to test the convergents before computing the next one, since the algorithm can be halted once a \emph{d} is found.
+
+\section{Wiener's Attack Code}
+
+% \section{Encoding Cryptographic Keys}
+% \label{appendix:pem}
+\end{appendices}
+
 \medskip
 
 %Bibliographic references
@@ -140,15 +178,6 @@ An example of using Wiener's attack to find \emph{d} is provided in Appendix \re
 %bibliography file "bib.bib".
 \bibliographystyle{unsrt}
 \bibliography{bib}
-
-\begin{appendices}
-\section{Wiener's Attack Example}
-\label{appendix:example}
-Let $ e = 42667 $ and $ n = 64741 $
-\section{Wiener's Attack Code}
-\section{Encoding Cryptographic Keys}
-\label{appendix:pem}
-\end{appendices}
 
 \end{document}
 
