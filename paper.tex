@@ -4,10 +4,13 @@
 \usepackage[english]{babel}
 \usepackage[title]{appendix}
 
+\usepackage{url}
+\usepackage{amsmath} % for "\cfrac" macro
+
 \usepackage[nottoc]{tocbibind} %Adds "References" to the table of contents
 
 %Document title, author and date (empty)
-\title{A Few Attacks to Break the RSA Cryptosystem}
+\title{A Few Attacks on RSA}
 \author{Jacob Shin}
 \date{December 2020}
 
@@ -24,28 +27,112 @@ RSA is a widely used cryptosystem that allows secure encryption and decryption o
 Let us first define some terminology. The message we want to encrypt is called the \emph{plaintext} and the encrypted message is the \emph{ciphertext}. They are denoted by \emph{m} and \emph{c}, respectively. We use also have two exponents when using RSA -- one used solely for encryption called the public exponent, \emph{e}, and a private exponent, \emph{d}, used only for decryption. The private exponent is kept private/secret as the name suggests, while the public exponent is not. The RSA algorithm also utilizes a modulus, \emph{n}, in both encryption and decryption operations. The following formulas allow us to encrypt and decrypt data.\\
 
 Encryption:
-$$ c \equiv m^e \; (mod \; n)$$
+\begin{equation} c \equiv m^e \; (mod \; n)\end{equation}
 
 Decrpytion:
-$$ m \equiv c^d \; (mod \; n)$$
+\begin{equation} m \equiv c^d \; (mod \; n)\end{equation}
 
 Notice that for encryption both \emph{e} and \emph{n} are present in addition to the message. Together these form the \emph{public key} and, which can be denoted as the pair $\langle n, e \rangle$. Similiarly, decryption uses both \emph{d} and \emph{n}, which together form the \emph{private key}. Both the public key and private key are also often encoded with base64 to save space and for easier packaging of the keys (see Appendix \ref{appendix:pem}).\\
 
-The following result can be derived from the above \cite{boneh}:
-$$ m \equiv c^d  \equiv (m^{e})^d\ \equiv m^{ed}\; (mod \; n)$$
+The following result can be derived from the above \cite{boneh}.
+\begin{equation} m \equiv c^d  \equiv (m^{e})^d\ \equiv m^{ed}\; (mod \; n)\end{equation}
 
-In order for the above statement to be true, there are some more definitions for some of the variables defined above. 
-$$ n = p \cdot q $$
+Next, we will try to show that expression 3 this is actually true and that decryption actuall works.. In order for the above expression to be true, there are some more definitions for some of the variables defined above. 
+\begin{equation} n = p \cdot q \end{equation}
 
-The modulus, \emph{n}, is the product of two distinct primes, \emph{p} and \emph{q}. One of the reasons why RSA is secure when done properly is due to how difficult it is to factor large numbers. Thus an attacker would have a difficult time factoring \emph{n} to get \emph{p} and \emph{q}.
+The modulus, \emph{n}, is the product of two distinct primes, \emph{p} and \emph{q}. The modulus, \emph{n}, is known to everyone since it's public, while the factors, \emph{p} and \emph{q}, are kept secret since they're used to derive the private key as we'll see later. One of the reasons why RSA is secure when done properly is due to how difficult it is to factor large numbers. Thus an attacker would have a difficult time factoring \emph{n} to get \emph{p} and \emph{q}.
 
-Next we have a function called Euler's totient represented by $\phi$.
-$$ \phi(n) = (p - 1)(q - 1)$$
+Next we have a function called \textbf{Euler's totient} represented by $\phi$.
+\begin{equation} \phi(n) = (p - 1)(q - 1)\end{equation}
 
-This function is used to get the value for \emph{e}, the public exponent.
+This function is used to get the value for \emph{e}, the public exponent. The public exponent only has to meet the following two conditions \cite{ctf1}.
+	$$ 1 < e < \phi(n) $$
+	$$ gcd(\phi(n), e) = 1 $$
+\end{itemize}
+
+The second condition means $\phi(n)$ and \emph{e} have to be relative primes or coprime. Finally, in order to obtain a proper value for \emph{d}, the private exponent, we need the following to be true \cite{ctf1}.
+\begin{equation} d \cdot e \equiv 1 \; (mod \; \phi(n)) \end{equation}
+
+This also means that there exists an integer \emph{k} so that the following is true.
+\begin{equation} d \cdot e = 1 \; + k \cdot \phi(n) = 1 \; + k \cdot (p - 1)(q - 1) \end{equation}
+
+
+Now we can plug in the value of $d \cdot e$ we got above to get the following.
+\begin{equation} c^d  \equiv (m^{e})^d\ \equiv m^{ed}\; (mod \; n) \equiv m^{1 \; + k \cdot (p - 1)(q - 1)}\; (mod \; n)\end{equation}
+
+\textbf{Fermat's little theorem} states that the following is true for all integers, \emph{a}, if \emph{p} is a prime number.
+\begin{equation} a^{p} \equiv a \; (mod \; p)\end{equation}
+
+And if \emph{a} is not divisible by \emph{p} the following is also true \cite{rosen}.
+\begin{equation} a^{p - 1} \equiv 1 \; (mod \; p)\end{equation}
+
+We can use Fermat's little theorem to get some more expressions. First we can rewrite expression 8 as follows:
+\begin{equation}  c^d   \equiv m^{1 \; + k \cdot (p - 1)(q - 1)} \equiv m^{1} \cdot m^{k \cdot (p - 1)(q - 1)}\; (mod \; n) \end{equation}
+\begin{equation}  \equiv m^{1} \cdot (m^{k \cdot (p - 1)})^{(q - 1)}\; (mod \; n) \end{equation}
+\begin{equation}  \equiv m^{1} \cdot (m^{k \cdot (q - 1)})^{(p - 1)}\; (mod \; n) \end{equation}
+
+When we apply Fermat's little theorem to expression 12 we get the following:
+\begin{equation} c^d \equiv m^{1} \cdot (m^{k \cdot (p - 1)})^{(q - 1)} \equiv m \; (mod \; q) \end{equation}
+
+And we can also apply the theorem to expression 13:
+\begin{equation} c^d \equiv m^{1} \cdot (m^{k \cdot (q - 1)})^{(p - 1)} \equiv m \; (mod \; p) \end{equation}
+
+Finally, we can apply the Chinese Remainder Theorem (see Section \ref{CRT}) to verify that decryption does indeed produce the original message \cite{rosen}:
+\begin{equation} c^d \equiv m^{1} \; (mod \; p \cdot q)\equiv m \; (mod \; n) \end{equation}
+
+Even though many attacks on RSA exist, most of the attacks are only effective when there is an improper use or generation of the public key and/or private key. Thus as long as RSA is not used improperly, it will be secure against any classical, non-quantum computer based attacks. In this paper, "breaking" RSA does not mean breaking the whole RSA cryptosystem, but rather just the implementation of RSA and the improper use of public/private keys to recover a secret. The rest of this paper will explore some of these classical, common attacks on RSA.
 
 \section{Wiener's Attack}
+Wiener's attack utilizes an improperly chosen private exponent, \emph{d}, in order to recover the secrets from just the public key. Wiener proved that if $d < \frac{1}{3} n^{\frac{1}{4}}$, it is guaranteed that an attacker can recover \emph{d} \cite{boneh}. Thus to prevent an attack, a user simply has to choose a value for \emph{d} that is big enough to be secure. The rest of this section will cover how to use Wiener's findings to recover \emph{d}.
 
+$\phi(n)$ can be approximated as \emph{n} \cite{wieners-youtube}:
+$$\phi(n) = (p - 1)(q - 1) = pq - (p + q) + 1 = n - (p + q) + 1$$
+Since \emph{n} is the product of two very large prime numbers, \emph{n} is also very large. Compared to the sum of \emph{p} and \emph{q}, \emph{n} is large enough that $p + q $ is neglibile and so we can approximate $\phi(n)$ as follows: 
+$$\phi({n}) \approx n$$
+
+After rearranging expression 7 we have the following:
+$$ d \cdot e = 1 \; + k \cdot \phi(n) $$
+$$ e = \frac{1}{d} + \frac{k \cdot \phi(n)}{d} $$
+$$ e - \frac{k \cdot \phi(n)}{d} =  \frac{1}{d} $$
+$$ \frac{e}{\phi(n)} - \frac{k}{d} =  \frac{1}{d \cdot \phi(n)} $$
+
+Since both $\phi(n)$ is a large number and $\phi(n) \cdot d$ is even larger, $\frac{1}{\phi(n) \cdot d}$ is approximately zero.
+$$ \frac{e}{\phi(n)} - \frac{k}{d} \approx  0 $$
+$$ \frac{e}{\phi(n)} \approx \frac{k}{d} $$
+
+Previously we showed that $\phi(n)$ was approximately \emph{n}, so we get the following result:
+$$ \frac{e}{n} \approx \frac{k}{d} $$
+
+We can use this result to get \emph{d} with only the public key, \emph{e} and \emph{n}. In order to get the value of $\frac{k}{d}$, we can generate a set of possible values for $\frac{k}{d}$ that approximate $\frac{e}{n}$ using \textbf{continued fractions}. Any real number can be represented as a continued fraction. The continued fraction converges to the value of the actual number. For example, $\pi$ can be represented as an infinite continued fraction. 
+
+$$\pi=3+\cfrac{1}{7+\cfrac{1}{15+\cfrac{1}{1+\cfrac{1}{292+\cfrac{1}{\ddots}}}}}$$
+
+After each fraction, the value of $\pi$ comes closer and closer to the actual value of $\pi$.
+
+$$ 3 + \frac{1}{7} = 3.142857143$$
+$$\pi=3+\cfrac{1}{7+\cfrac{1}{15}} = 3.141509434$$
+$$\pi=3+\cfrac{1}{7+\cfrac{1}{15+\cfrac{1}{1}}} = 3.14159292 $$
+
+and so on. \\
+
+Each fraction at each step is called a \emph{convergent}. We can also use continued fractions to get approximations for rational numbers as well like $\frac{e}{n}$. Since we know that $\frac{k}{d}$ is only \emph{approximately} $\frac{e}{n}$, we need to use continued fractions to generate a list of approximations (i.e. convergents of $\frac{e}{n}$) and get the actual value of $\frac{k}{d}$. Wiener proved that one of the convergents of the continued fraction for $\frac{e}{n}$ \emph{must} be equal to $\frac{k}{d}$ \cite{boneh}. Thus in order to get \emph{d}, all we need to do is generate convergents for $\frac{e}{n}$ and then check each convergent to determine if it is equal to $\frac{k}{d}$. The first part is simple; we can use Euclid's algorithm to generate convergents. In order to check to see if the convergent is valid we can use three checks. If the convergent passes all the checks, then the convergent is equal to $\frac{k}{d}$; if the convergent fails any one of the tests, then it is not the right one and thus we can move on to the next convergent \cite{wieners-youtube}. Here are the checks:
+
+\begin{enumerate}
+	\item \emph{d} must be odd. We know that $\phi(n) = (p - 1)(q - 1)$ is even. Since both \emph{p} and \emph{q} are primes, they are odd. One less than an odd number is always even and the product of two even numbers is also always even. Thus $(p - 1)(q - 1)$ is always even. Since $d \cdot e = 1 + k \cdot \phi(n) $, we know that one plus an even number is always odd. So both sides of the expression must be odd, since $\phi(n) \cdot k + 1$ is odd. This also means $e \cdot d$ is odd, and since $e$ is odd, then d must also be odd in order for the product of \emph{e} and \emph{d} to be odd. 
+	\item We know that $\phi(n) = \frac{d \cdot e  - 1}{k}$ after rearranging expression 7. Since $\phi(n)$ is a positive integer, our second check is to make sure that $\frac{d \cdot e  - 1}{k}$ is a whole number.
+	\item The final check is to make sure that the \emph{p} and \emph{q} we obtain from our solution are positive integers. We can solve for \emph{p} and \emph{q} by using a simple quadratic formula. The formula and derivation are shown below:
+		$$ \phi(n) = n - (p + q) + 1$$
+		$$ p + q = n - phi(n) + 1$$
+		$$ (x - p)(x - q) = 0$$
+		$$ x^2 - (p + q)x + pq = 0$$
+		$$ x^2 - (n - \phi(n) + 1)x + pq = 0$$
+\end{enumerate}
+
+An example of using Wiener's attack to find \emph{d} is provided in Appendix \ref{appendix:example}.
+
+\section{Chinese Remainder Theorem (CRT)} \label{CRT}
+
+\section{Håstad's attack}
 \medskip
 
 %Bibliographic references
@@ -55,7 +142,10 @@ This function is used to get the value for \emph{e}, the public exponent.
 \bibliography{bib}
 
 \begin{appendices}
-\section{Wiener's Attack Example Code}
+\section{Wiener's Attack Example}
+\label{appendix:example}
+Let $ e = 42667 $ and $ n = 64741 $
+\section{Wiener's Attack Code}
 \section{Encoding Cryptographic Keys}
 \label{appendix:pem}
 \end{appendices}
