@@ -4,6 +4,7 @@
 \usepackage[english]{babel}
 \usepackage[title]{appendix}
 \usepackage{graphicx}
+\usepackage{minted}
 
 \usepackage{url}
 \usepackage{amsmath} % for "\cfrac" macro
@@ -166,6 +167,10 @@ $$0+\cfrac{1}{1+\cfrac{1}{1+\cfrac{1}{1}}} = \frac{2}{3} $$
 Note that in this examples, the convergents are precomputed ahead of time for clarity; however, it is more efficient in an actual algorithm to test the convergents before computing the next one, since the algorithm can be halted once a \emph{d} is found.
 
 \section{Wiener's Attack Code}
+\inputminted{python}{./test.py}
+
+\section{A Visual Representation of Wiener's Attack}
+\includegraphics{./tenor-0.png}
 
 % \section{Encoding Cryptographic Keys}
 % \label{appendix:pem}
